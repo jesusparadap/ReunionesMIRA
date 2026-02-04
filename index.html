@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reuniones agendadas</title>
+  <style>
+  /* Fondo general blanco abajo */
+  body{
+    font-family:system-ui,Segoe UI,Roboto,Arial;
+    margin:0;
+    background:#ffffff;
+    color:#0b1220;
+  }
+
+  /* Encabezado azul (se mantiene) */
+  header{
+    padding:18px 16px;
+    background:linear-gradient(135deg,#102a67,#0b1220);
+    color:#e8eefc;
+  }
+
+  h1{margin:0;font-size:18px}
+  .sub{opacity:.85;font-size:13px;margin-top:6px}
+
+  .wrap{padding:14px;max-width:980px;margin:0 auto}
+
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+
+  /* Inputs claros (sobre fondo blanco) */
+  input,select{
+    background:#ffffff;
+    border:1px solid #cfd6e6;
+    color:#0b1220;
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  input{flex:1;min-width:220px}
+  select{min-width:180px}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:12px
+  }
+
+  /* Tarjetas azules */
+  .card{
+    background:#101a33;
+    border:1px solid #263255;
+    border-radius:16px;
+    padding:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.10);
+    color:#e8eefc;
+  }
+
+  .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .date{font-weight:700}
+  .time{opacity:.9}
+
+  .pill{
+    font-size:12px;
+    border:1px solid #2f3b62;
+    border-radius:999px;
+    padding:3px 8px;
+    opacity:.95;
+    color:#e8eefc;
+  }
+
+  .muted{
+    opacity:.9;
+    font-size:13px;
+    margin-top:8px;
+    line-height:1.35;
+    color:#e8eefc;
+  }
+
+  .row{
+    margin-top:10px;
+    font-size:13px;
+    opacity:.92;
+    color:#e8eefc;
+  }
+  .row b{opacity:1}
+
+  .empty{opacity:.8;text-align:center;padding:40px 10px}
+
+  footer{opacity:.7;text-align:center;font-size:12px;padding:16px}
+
+  a{color:#1a66ff}
+</style>
+
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>📅 Reuniones agendadas</h1>
+      <div class="sub">Archivo local estatico, sin internet</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="bar">
+      <input id="q" placeholder="Buscar (ej: Soledad, Juan, Villa…)" />
+      <select id="mun"><option value="">Municipio (todos)</option></select>
+      <select id="lid"><option value="">Líder (todos)</option></select>
+    </div>
+
+    <div id="count" class="sub"></div>
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" style="display:none;">No hay reuniones con esos filtros.</div>
+
+    <footer>
+      No compartir.
+    </footer>
+  </div>
+
+<script>
+  // 1) Pega aquí el contenido del CSV (o usa el botón "pegar" que te hago si quieres)
+  const CSV_TEXT = `Fecha,Hora,Dirección ,Barrio,Municipio,Nombre del lider que organiza la reunión
+4/02/2026,9:30 a.m.,Calle 73 # 12 - 111 Torre 4 apto 3016,Manantiales Girasol,Soledad,LUISA FERNANDA ALDANA DURANGO
+4/02/2026,2:30 p.m.,Calle 47 # 14 D - 59,Villa Monaco, Soledad,MANUEL OBREGON/ROSA DE LA VALLE
+6/02/2026,3:30 p.m.,Calle 58 B # 5C - 03 ,Villa Valentina,Soledad,DEYCEIBIS ROCHA/EDITH TOVAR
+7/02/2026,2:00 p.m.,Cra 14-4 # 51-49,Villa Rosa,Soledad,LUISA ALDANA/FIDELIA MORELO
+7/02/2026,4:00 p.m.,Calle 47 # 14D - 71,Villa Monaco,Soledad ,JAINER ELIECER FIGUEROA MARIN
+7/02/2026,4:30 p.m.,Calle 46 # 19 15,Villa katanga,Soledad,SAYDA ROJAS
+7/02/2026,5:00 p.m.,Carrera 12 #67-12,Manantiales,Soledad ,JORGE BORNEAU
+8/02/2026,2:00 p.m.,Calle 48 # 17 - 54 torre 23 apto 303,Conjunto Puerto Timbal,Soledad,ALEX JOSE GALINDO ROCHA
+8/02/2026,4:00 p.m.,Carrera 30B # 43 -17,Chiquinquira,Barranquilla,SALLY ARIAS PEREIRA
+8/02/2026,4:00 p.m.,Calle 67 # 7B - 28,Ciudad Camelot,Soledad,DEYCEIBIS ROCHA CARRASCAL
+8/02/2026,5:00 p.m.,Trans1b sur # 67-76 Conjunto Yarumo cs 39,Ciudad Salitre,Soledad,JESUS PARADA
+9/02/2026,2:00 p.m.,Calle 34 C # 2 - 18,Universal,Soledad ,LUISA ALDANA/ANALIDA BARRAZA
+9/02/2026,5:00 p.m.,Carrera 10 Sur No. 43-19,Ciudadela 20 de Julio ,Soledad ,MIGUEL VITAL/NOYRA SOFIA VITAL
+10/02/2026,7:00 p.m.,Calle 42 # 1B - 42,Villa Blanca,Barranquilla,JESUS PARADA/IVETH FELIZOLA
+15/02/2026,2:00 p.m.,Calle 63 #9-110,Terranova 2,Soledad,DANIEL DE LA HOZ
+15/02/2026,4:00 p.m.,Calle 66A # 9A - 02,Ciudad Caribe 1,Soledad,JESUS PARADA/AUGUSTO RODRIGUEZ
+19/02/2026,5:00 p.m.,Carrera 15 57-214 mz 5 casa 6,VILLA LINDA,Soledad,OMAR VARGAS
+21/02/2026,5:00 p.m.,Carrera 9 #70a- 75 torre 8 apartamento 304,Manantial,Soledad ,CANDELARIA TORRES 
+24/02/2026,5:00 p.m.,Carrera 16 con calle 6 (por la parte de atrás del Ara de la Murillo),Villa Las Moras,Soledad,MIGUEL VITAL (Mirleidis Ramos y Rubiris Pérez)
+`;
+
+  function splitCSVLine(line) {
+  // Soporta comillas "..." por si algún día las usas
+  const out = [];
+  let cur = "";
+  let inQ = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      // doble comilla dentro de comillas -> "
+      if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === "," && !inQ) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map(s => s.trim());
+}
+
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  const headers = splitCSVLine(lines[0]).map(h => h.trim());
+  return lines.slice(1).map(line=>{
+    const cols = splitCSVLine(line);
+    const obj = {};
+    headers.forEach((h,i)=> obj[h] = (cols[i] ?? "").trim());
+    return obj;
+  });
+}
+
+
+  function uniq(arr){ return [...new Set(arr.filter(Boolean))].sort((a,b)=>a.localeCompare(b)); }
+
+  function parseDateDMY(fecha){
+  // "4/02/2026" => 2026-02-04 (día/mes/año)
+  const m = (fecha || "").trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return null;
+  const d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
+  return { y, mo, d };
+}
+
+function parseTimeAMPM(hora){
+  // "9:30 a.m." / "2:30 p.m." / "7:00 p.m."
+  let h = 0, min = 0;
+  const s = (hora || "").toLowerCase().replace(/\s+/g," ").trim();
+
+  const m = s.match(/^(\d{1,2}):(\d{2})\s*(a\.m\.|p\.m\.)$/);
+  if (!m) return { h: 0, min: 0 };
+
+  h = Number(m[1]);
+  min = Number(m[2]);
+  const ampm = m[3];
+
+  if (ampm === "p.m." && h !== 12) h += 12;
+  if (ampm === "a.m." && h === 12) h = 0;
+
+  return { h, min };
+}
+
+function toDateKey(fecha, hora){
+  const dmy = parseDateDMY(fecha);
+  if (!dmy) return new Date(1970,0,1);
+
+  const t = parseTimeAMPM(hora);
+  return new Date(dmy.y, dmy.mo - 1, dmy.d, t.h, t.min, 0, 0);
+}
+
+const data = parseCSV(CSV_TEXT).map(x=>{
+  // OJO: tus headers exactos (con acento y espacios)
+  const fecha = x["Fecha"];
+  const hora  = x["Hora"];
+
+  return {
+    fecha,
+    hora,
+    direccion: x["Dirección"] || x["Dirección "] || x["Direccion"] || x["Direccion "] || "",
+    barrio: x["Barrio"] || "",
+    municipio: (x["Municipio"] || "").trim(),
+    lider: x["Nombre del lider que organiza la reunión"] || "",
+    _dt: toDateKey(fecha, hora)
+  };
+}).sort((a,b)=> a._dt - b._dt);
+
+  const q = document.getElementById("q");
+  const mun = document.getElementById("mun");
+  const lid = document.getElementById("lid");
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  const count = document.getElementById("count");
+
+  function fillSelect(sel, values){
+    values.forEach(v=>{
+      const o = document.createElement("option");
+      o.value=v; o.textContent=v;
+      sel.appendChild(o);
+    });
+  }
+  fillSelect(mun, uniq(data.map(d=>d.municipio)));
+  fillSelect(lid, uniq(data.map(d=>d.lider)));
+
+  function render(){
+    const term = q.value.trim().toLowerCase();
+    const m = mun.value;
+    const l = lid.value;
+
+    const filtered = data.filter(d=>{
+      if (m && d.municipio !== m) return false;
+      if (l && d.lider !== l) return false;
+      if (!term) return true;
+      const blob = `${d.fecha} ${d.hora} ${d.direccion} ${d.barrio} ${d.municipio} ${d.lider}`.toLowerCase();
+      return blob.includes(term);
+    });
+
+    grid.innerHTML = "";
+    empty.style.display = filtered.length ? "none" : "block";
+    count.textContent = `Mostrando ${filtered.length} reunión(es).`;
+
+    filtered.forEach(d=>{
+      const el = document.createElement("div");
+      el.className="card";
+      el.innerHTML = `
+        <div class="top">
+          <div>
+            <div class="date">${d.fecha}</div>
+            <div class="time">${d.hora || ""}</div>
+          </div>
+          <div class="pill">${d.municipio || "—"}</div>
+        </div>
+        <div class="muted">${d.direccion || ""}</div>
+        <div class="row"><b>Barrio:</b> ${d.barrio || "—"}</div>
+        <div class="row"><b>Líder:</b> ${d.lider || "—"}</div>
+      `;
+      grid.appendChild(el);
+    });
+  }
+
+  q.addEventListener("input", render);
+  mun.addEventListener("change", render);
+  lid.addEventListener("change", render);
+  render();
+</script>
+</body>
+</html>
