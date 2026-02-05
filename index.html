@@ -231,7 +231,13 @@ function toDateKey(fecha, hora){
   const t = parseTimeAMPM(hora);
   return new Date(dmy.y, dmy.mo - 1, dmy.d, t.h, t.min, 0, 0);
 }
-
+function diaSemanaLetras(d){
+  const dias = [
+    "Domingo","Lunes","Martes","Miércoles",
+    "Jueves","Viernes","Sábado"
+  ];
+  return dias[d.getDay()];
+}
 const data = parseCSV(CSV_TEXT).map(x=>{
   // OJO: tus headers exactos (con acento y espacios)
   const fecha = x["Fecha"];
@@ -290,7 +296,9 @@ const data = parseCSV(CSV_TEXT).map(x=>{
       el.innerHTML = `
         <div class="top">
           <div>
-            <div class="date">${d.fecha}</div>
+            <div class="date">${diaSemanaLetras(d._dt)}</div>
+            <div class="time">${d.fecha}</div>
+            // <div class="date">${d.fecha}</div>
             <div class="time">${d.hora || ""}</div>
           </div>
           <div class="pill">${d._dt < new Date() ? "REALIZADA" : d.municipio || "—"}</div>
@@ -310,6 +318,7 @@ const data = parseCSV(CSV_TEXT).map(x=>{
 </script>
 </body>
 </html>
+
 
 
 
