@@ -88,6 +88,26 @@
   footer{opacity:.7;text-align:center;font-size:12px;padding:16px}
 
   a{color:#1a66ff}
+
+  /* Reuniones ya realizadas */
+  .card.pasada{
+    background:#f2f4f8;
+    border:1px solid #d6dbea;
+    color:#5a6270;
+  }
+  
+  .card.pasada .muted,
+  .card.pasada .row,
+  .card.pasada .pill{
+    color:#5a6270;
+    border-color:#c8cede;
+    opacity:.9;
+  }
+  
+  .card.pasada .date{
+    text-decoration: line-through;
+    opacity:.8;
+  }
 </style>
 
 </head>
@@ -264,14 +284,16 @@ const data = parseCSV(CSV_TEXT).map(x=>{
 
     filtered.forEach(d=>{
       const el = document.createElement("div");
-      el.className="card";
+      const ahora = new Date();
+      const esPasada = d._dt < ahora;
+      el.className = "card" + (esPasada ? " pasada" : "");
       el.innerHTML = `
         <div class="top">
           <div>
             <div class="date">${d.fecha}</div>
             <div class="time">${d.hora || ""}</div>
           </div>
-          <div class="pill">${d.municipio || "—"}</div>
+          <div class="pill">${d._dt < new Date() ? "REALIZADA" : d.municipio || "—"}</div>
         </div>
         <div class="muted">${d.direccion || ""}</div>
         <div class="row"><b>Barrio:</b> ${d.barrio || "—"}</div>
@@ -288,5 +310,6 @@ const data = parseCSV(CSV_TEXT).map(x=>{
 </script>
 </body>
 </html>
+
 
 
