@@ -142,6 +142,7 @@
 4/02/2026,2:30 p.m.,Calle 47 # 14 D - 59,Villa Monaco, Soledad,MANUEL OBREGON/ROSA DE LA VALLE
 6/02/2026,3:30 p.m.,Calle 58 B # 5C - 03 ,Villa Valentina,Soledad,DEYCEIBIS ROCHA/EDITH TOVAR
 7/02/2026,2:00 p.m.,Cra 14-4 # 51-49,Villa Rosa,Soledad,LUISA ALDANA/FIDELIA MORELO
+7/02/2026,3:00 p.m.,Calle 56D # 41-20,Villa del Carmen 2 Etapa,Soledad,JESUS PARADA/LUZ GUZMAN (Winis Lascarro Peña)
 7/02/2026,4:00 p.m.,Calle 47 # 14D - 71,Villa Monaco,Soledad ,JAINER ELIECER FIGUEROA MARIN
 7/02/2026,4:30 p.m.,Calle 46 # 19 15,Villa katanga,Soledad,SAYDA ROJAS
 7/02/2026,5:00 p.m.,Carrera 12 #67-12,Manantiales,Soledad ,JORGE BORNEAU
@@ -152,6 +153,7 @@
 9/02/2026,2:00 p.m.,Calle 34 C # 2 - 18,Universal,Soledad ,LUISA ALDANA/ANALIDA BARRAZA
 9/02/2026,5:00 p.m.,Carrera 10 Sur No. 43-19,Ciudadela 20 de Julio ,Soledad ,MIGUEL VITAL/NOYRA SOFIA VITAL
 9/02/2026,6:00 p.m.,Carrera 13 # 73-72 Portal de los Manantiales Manzana 8,El Manantial	,Soledad ,SAYDA ROJAS/MARITZA CASTRO
+10/02/2026,9:00 a.m.,Por confirmar,	Nuevo Horizonte,Soledad ,VIVIAN GUERRERO/FRANQUELINA
 10/02/2026,6:00 p.m.,Calle 73 #12-111 torre 4 apartamento 3016,	Manantiales Girasol ,Soledad ,SAYDA ROJAS/MARITZA CASTRO
 10/02/2026,7:00 p.m.,Calle 42 # 1B - 42,Villa Blanca,Barranquilla,JESUS PARADA/IVETH FELIZOLA
 15/02/2026,2:00 p.m.,Calle 63 #9-110,Terranova 2,Soledad,DANIEL DE LA HOZ
@@ -297,8 +299,7 @@ const data = parseCSV(CSV_TEXT).map(x=>{
         <div class="top">
           <div>
             <div class="date">${diaSemanaLetras(d._dt)}</div>
-            <div class="time">${d.fecha}</div>
-            // <div class="date">${d.fecha}</div>
+            <div class="date">${d.fecha}</div>
             <div class="time">${d.hora || ""}</div>
           </div>
           <div class="pill">${d._dt < new Date() ? "REALIZADA" : d.municipio || "—"}</div>
@@ -318,6 +319,7 @@ const data = parseCSV(CSV_TEXT).map(x=>{
 </script>
 </body>
 </html>
+
 
 
 
